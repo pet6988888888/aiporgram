@@ -1,23 +1,28 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Custom Workout & Meal Plan Generator (Dark)</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Custom Workout & Meal Plan Generator (Dark/Light)</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Set up Tailwind configuration for Dark Mode -->
+    <!-- Tailwind config for dark and light mode colors -->
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        'primary': '#6366f1', /* Vibrant Indigo 500 accent */
-                        'secondary': '#2dd4bf', /* Bright Teal 400 accent */
-                        'dark-bg': '#111827', /* Very Dark Gray background (Gray 900) */
-                        'card-bg': '#1f2937', /* Darker Gray for Cards (Gray 800) */
-                        'light-text': '#f3f4f6', /* Light Gray text (Gray 100) */
-                        'highlight-green': '#34d399', /* Emerald Green for positive metrics */
+                        'primary': '#6366f1', /* Indigo 500 */
+                        'secondary': '#2dd4bf', /* Teal 400 */
+                        'dark-bg': '#111827', /* Dark Gray 900 */
+                        'card-bg': '#1f2937', /* Dark Gray 800 */
+                        'light-text': '#f3f4f6', /* Gray 100 */
+                        'highlight-green': '#34d399', /* Emerald Green */
+                        'light-bg': '#f9fafb', /* Light background */
+                        'light-card-bg': '#ffffff', /* White card background */
+                        'light-border': '#d1d5db', /* Gray 300 border */
+                        'light-text-dark': '#1f2937', /* Dark text for light mode */
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
@@ -27,14 +32,19 @@
         }
     </script>
     <style>
-        /* Custom styles for dark theme and mobile usability */
         body {
-            background-color: #111827; /* Very Dark Gray background */
-            font-family: 'Inter', sans-serif;
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            color: #f3f4f6; /* Default light text */
+            font-family: 'Inter', sans-serif;
+        }
+        body.dark {
+            background-color: #111827;
+            color: #f3f4f6;
+        }
+        body.light {
+            background-color: #f9fafb;
+            color: #1f2937;
         }
         .container-wrapper {
             max-width: 1024px;
@@ -42,34 +52,54 @@
             padding: 1rem;
         }
         .form-card, .plan-card {
-            background-color: #1f2937; /* Darker Gray for Cards */
             padding: 1.5rem;
             border-radius: 12px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.15);
             margin-bottom: 1.5rem;
-            border: 1px solid #374151; /* Gray 700 border */
+            border: 1px solid;
         }
-        
-        /* Input Field Styling OVERRIDE: Set to dark background/light text */
+        body.dark .form-card,
+        body.dark .plan-card {
+            background-color: #1f2937;
+            border-color: #374151;
+            color: #f3f4f6;
+        }
+        body.light .form-card,
+        body.light .plan-card {
+            background-color: #ffffff;
+            border-color: #d1d5db;
+            color: #1f2937;
+        }
         input, select, textarea {
             width: 100%;
             padding: 10px;
-            border: 1px solid #4b5563; /* Gray 600 border */
-            background-color: #374151; /* Gray 700 for contrast */
-            color: #f3f4f6; 
             border-radius: 6px;
             margin-top: 4px;
             transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            border: 1px solid;
+            font-family: inherit;
+            font-size: 1rem;
         }
-        /* Focus state uses primary accent color */
+        body.dark input,
+        body.dark select,
+        body.dark textarea {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #f3f4f6;
+        }
+        body.light input,
+        body.light select,
+        body.light textarea {
+            background-color: #f3f4f6;
+            border-color: #9ca3af;
+            color: #1f2937;
+        }
         input:focus, select:focus, textarea:focus {
-            border-color: #6366f1; /* Primary Indigo color */
             outline: 0;
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
-            background-color: #374151; 
+            border-color: #6366f1;
+            background-color: inherit;
         }
-
-        /* Style the Unit Toggle Radio Button */
         .form-radio {
             -webkit-appearance: none;
             -moz-appearance: none;
@@ -78,74 +108,79 @@
             width: 1rem;
             height: 1rem;
             border-radius: 50%;
-            border: 2px solid #9ca3af; /* Gray 400 */
-            background-color: #1f2937; /* Card background */
+            border: 2px solid #9ca3af;
+            background-color: #1f2937;
             transition: border-color 0.2s, background-color 0.2s;
         }
+        body.light .form-radio {
+            background-color: #f3f4f6;
+            border-color: #6b7280;
+        }
         .form-radio:checked {
-            border-color: #6366f1; /* Primary Indigo */
+            border-color: #6366f1;
             background-color: #6366f1;
             box-shadow: 0 0 0 2px #1f2937 inset;
         }
-        
-        /* Style the Plan Output Area */
+        body.light .form-radio:checked {
+            box-shadow: 0 0 0 2px #f9fafb inset;
+        }
         #planOutput {
-            white-space: pre-wrap; /* Crucial for preserving AI line breaks and structure */
+            white-space: pre-wrap;
             word-wrap: break-word;
             min-height: 200px;
             max-height: 80vh;
             overflow-y: auto;
-            background-color: #374151; /* Gray 700 output background */
-            color: #f3f4f6; /* Light text for main content */
             padding: 1.5rem;
             border-radius: 8px;
             line-height: 1.6;
             font-size: 0.95rem;
-            font-family: monospace; /* Monospaced font for clean structure */
-            border: 1px solid #4b5563;
-            text-align: left; /* Ensures output starts flush to the left */
+            font-family: monospace;
+            border: 1px solid;
+            text-align: left;
         }
-        
-        /* --- Syntax Highlighting Styles --- */
+        body.dark #planOutput {
+            background-color: #374151;
+            color: #f3f4f6;
+            border-color: #4b5563;
+        }
+        body.light #planOutput {
+            background-color: #e5e7eb;
+            color: #1f2937;
+            border-color: #d1d5db;
+        }
         .plan-heading-week {
-            color: #2dd4bf; /* Teal Accent */
-            font-weight: 800; 
-            font-size: 1.5rem; 
-            display: block; 
-            margin-top: 2rem; 
+            color: #2dd4bf;
+            font-weight: 800;
+            font-size: 1.5rem;
+            display: block;
+            margin-top: 2rem;
             margin-bottom: 0.5rem;
-            border-bottom: 2px solid #2dd4bf; 
+            border-bottom: 2px solid #2dd4bf;
             padding-bottom: 4px;
         }
-        
-        /* Daily Heading - ALL CAPS and increased bottom margin for space */
         .plan-heading-day {
-            color: #6366f1; /* Primary Indigo Accent */
+            color: #6366f1;
             font-weight: 700;
-            font-size: 1.25rem; 
+            font-size: 1.25rem;
             display: block;
-            margin-top: 1.25rem; 
-            text-transform: uppercase; 
-            margin-bottom: 0.75rem; 
+            margin-top: 1.25rem;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
         }
-        
-        /* Section Headline Style (WORKOUT/NUTRITION) - ALL CAPS, clear break */
         .plan-heading-section {
-            color: #d1d5db; /* Gray 300 - Lighter for visibility */
+            color: #d1d5db;
             font-weight: 700;
             display: block;
-            margin-top: 1rem; 
-            padding-bottom: 0.3rem; 
-            border-bottom: 1px solid #6b7280; /* Gray 500 */
-            text-transform: uppercase; 
-            font-size: 1.1rem; 
-            margin-bottom: 0.8rem; 
+            margin-top: 1rem;
+            padding-bottom: 0.3rem;
+            border-bottom: 1px solid #6b7280;
+            text-transform: uppercase;
+            font-size: 1.1rem;
+            margin-bottom: 0.8rem;
         }
-        
-        /* Client Summary/Metric Heading */
         .plan-heading-summary {
-            color: #34d399; /* Bright Green for key data */
-            font-weight: 800; 
+            color: #34d399;
+            font-weight: 800;
             font-size: 1.2rem;
             display: block;
             margin-top: 0.5rem;
@@ -153,70 +188,156 @@
             padding-bottom: 4px;
             border-bottom: 2px solid #34d399;
         }
-
         .plan-metric-key {
-            color: #34d399; /* Bright Green Accent for key numbers */
-            font-weight: 800; 
+            color: #34d399;
+            font-weight: 800;
         }
-        
-        /* --- Printing Styles (Ensures black text on white paper) --- */
+        body.light .plan-heading-week {
+            color: #0d9488;
+            border-color: #0d9488;
+        }
+        body.light .plan-heading-day {
+            color: #4f46e5;
+        }
+        body.light .plan-heading-section {
+            color: #4b5563;
+            border-color: #9ca3af;
+        }
+        body.light .plan-heading-summary,
+        body.light .plan-metric-key {
+            color: #059669;
+            border-color: #059669;
+        }
         @media print {
-            body > * {
-                display: none !important;
+            body * {
+                visibility: hidden;
+            }
+            #planToPrint, #planToPrint * {
+                visibility: visible;
             }
             #planToPrint {
-                display: block !important;
-                position: fixed;
-                top: 0;
+                position: absolute;
                 left: 0;
+                top: 0;
                 width: 100%;
                 height: 100%;
                 padding: 1in;
-                margin: 0;
-                background-color: white !important;
-                color: black !important;
-                font-size: 10pt; 
+                background: white;
+                color: black;
+                font-family: Arial, sans-serif;
+                font-size: 10pt;
                 line-height: 1.5;
             }
-            /* Reset visual elements for print */
             #planOutput {
                 overflow: visible !important;
                 background-color: white !important;
                 color: black !important;
                 padding: 0 !important;
-                font-family: Arial, sans-serif;
                 border: none !important;
+                font-family: Arial, sans-serif;
             }
-            /* Ensure all text is black for printing and remove decorative styles */
-            #planToPrint, #planToPrint *, .plan-heading-week, .plan-heading-day, .plan-heading-section, .plan-metric-key, .plan-heading-summary {
-                 color: black !important;
-                 box-shadow: none !important;
-                 border: none !important;
-                 text-decoration: none !important; 
-                 font-size: inherit !important;
-                 font-weight: 400 !important;
-                 display: inline !important; 
-                 text-transform: none !important; /* Undo ALL CAPS for print */
+            #planToPrint, #planToPrint *,
+            .plan-heading-week, .plan-heading-day,
+            .plan-heading-section, .plan-metric-key, .plan-heading-summary {
+                color: black !important;
+                box-shadow: none !important;
+                border: none !important;
+                text-decoration: none !important;
+                font-size: inherit !important;
+                font-weight: 400 !important;
+                display: inline !important;
+                text-transform: none !important;
             }
-            /* Add bolding back for structure on print */
-             .plan-heading-week, .plan-heading-day, .plan-heading-section, .plan-heading-summary {
-                font-weight: 700 !important; 
+            .plan-heading-week, .plan-heading-day,
+            .plan-heading-section, .plan-heading-summary {
+                font-weight: 700 !important;
                 display: block !important;
                 margin-top: 0.5rem !important;
                 margin-bottom: 0.1rem !important;
-             }
+            }
+        }
+        #modeToggleBtn {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            z-index: 1000;
+            padding: 6px;
+            border-radius: 6px;
+            transition: background-color 0.3s;
+        }
+        #modeToggleBtn:hover {
+            background-color: rgba(99, 102, 241, 0.15);
+        }
+        #modeToggleIcon {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+        /* Styling for plan type dropdown */
+        #planTypeSelect {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 1rem;
+            border: 1px solid;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            font-family: inherit;
+            appearance: none;
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg fill='none' stroke='%236366f1' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M6 9l6 6 6-6'%3e%3c/path%3e%3c/svg%3e");
+        }
+        body.dark #planTypeSelect {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #f3f4f6;
+        }
+        body.dark #planTypeSelect:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+            background-color: #374151;
+            color: #f3f4f6;
+        }
+        body.light #planTypeSelect {
+            background-color: #f3f4f6;
+            border-color: #9ca3af;
+            color: #1f2937;
+        }
+        body.light #planTypeSelect:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+            background-color: #f3f4f6;
+            color: #1f2937;
         }
     </style>
 </head>
-<body>
+<body class="dark">
+    <button id="modeToggleBtn" aria-label="Toggle Dark/Light Mode" title="Toggle Dark/Light Mode" type="button">
+        <svg id="modeToggleIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+    </button>
 
     <div class="container-wrapper">
         <header class="text-center py-6">
             <h1 class="text-4xl font-extrabold text-primary">AI Client Plan Creator</h1>
-            <p class="text-lg text-gray-400 mt-2">Generate 30-Day Workout & Nutrition Plans Instantly.</p>
+            <p class="text-lg mt-2 text-gray-400 dark:text-gray-400 light:text-gray-600">Generate 30-Day Workout & Nutrition Plans Instantly.</p>
         </header>
-        
-        <!-- Tab Navigation (New Feature) -->
+
         <div class="flex justify-center mb-6">
             <button id="newPlanTab" onclick="switchTab('new')" 
                     class="px-6 py-3 rounded-l-lg font-semibold transition duration-200 
@@ -229,94 +350,87 @@
                 Adapt Existing Plan
             </button>
         </div>
-        <!-- End Tab Navigation -->
 
         <main class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-            <!-- Input Form Card -->
             <div class="form-card" id="inputForm">
-                <h2 id="formTitle" class="text-2xl font-semibold text-light-text mb-4 border-b border-gray-700 pb-2">Client Profile & Goal Settings</h2>
+                <h2 id="formTitle" class="text-2xl font-semibold mb-4 border-b pb-2 border-gray-700 dark:text-light-text light:text-light-text">Client Profile & Goal Settings</h2>
 
-                <!-- NEW PLAN FORM SECTION -->
                 <div id="newPlanForm">
                     <form id="clientFormNew" onsubmit="event.preventDefault(); generatePlan();">
-                        
-                         <!-- Unit Toggle Switch -->
-                        <div class="mb-6 flex justify-center space-x-4 p-3 bg-gray-700 rounded-lg border border-gray-600">
-                            <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="radio" name="unitSystem" value="metric" checked onchange="switchUnits('metric')" class="form-radio text-primary">
-                                <span class="text-sm font-medium text-light-text">Metric (kg, cm)</span>
+
+                        <!-- Moved Plan Type selector here as dropdown -->
+                        <label for="planTypeSelect" class="block mb-2 font-semibold dark:text-gray-300 light:text-gray-700">Select Plan Type</label>
+                        <select id="planTypeSelect" name="planType" aria-label="Select Plan Type">
+                            <option value="both" selected>Workout & Nutrition</option>
+                            <option value="workout">Workout Only</option>
+                            <option value="nutrition">Nutrition Only</option>
+                        </select>
+
+                        <!-- Unit Toggle Switch -->
+                        <div class="mb-6 flex justify-center space-x-4 p-3 bg-gray-700 rounded-lg border border-gray-600 dark:bg-gray-700 light:bg-gray-200 light:border-gray-300">
+                            <label class="flex items-center space-x-2 cursor-pointer dark:text-light-text light:text-gray-700">
+                                <input type="radio" name="unitSystem" value="metric" checked onchange="switchUnits('metric')" class="form-radio text-primary" />
+                                <span class="text-sm font-medium">Metric (kg, cm)</span>
                             </label>
-                            <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="radio" name="unitSystem" value="imperial" onchange="switchUnits('imperial')" class="form-radio text-primary">
-                                <span class="text-sm font-medium text-light-text">Imperial (lbs, ft/in)</span>
+                            <label class="flex items-center space-x-2 cursor-pointer dark:text-light-text light:text-gray-700">
+                                <input type="radio" name="unitSystem" value="imperial" onchange="switchUnits('imperial')" class="form-radio text-primary" />
+                                <span class="text-sm font-medium">Imperial (lbs, ft/in)</span>
                             </label>
                         </div>
 
-                        <!-- Basic Info Row -->
+                        <!-- Rest of form inputs unchanged -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
-                                <label for="clientName" class="block text-sm font-medium text-gray-300">Client Name</label>
-                                <input type="text" id="clientName" placeholder="John Doe" required>
+                                <label for="clientName" class="block text-sm font-medium dark:text-gray-300 light:text-gray-700">Client Name</label>
+                                <input type="text" id="clientName" placeholder="John Doe" required />
                             </div>
                             <div>
-                                <label for="age" class="block text-sm font-medium text-gray-300">Age</label>
-                                <input type="number" id="age" min="16" max="100" placeholder="35" required>
+                                <label for="age" class="block text-sm font-medium dark:text-gray-300 light:text-gray-700">Age</label>
+                                <input type="number" id="age" min="16" max="100" placeholder="35" required />
                             </div>
                         </div>
-
-                        <!-- Physical Stats Row -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                             <div>
-                                <label for="gender" class="block text-sm font-medium text-gray-300">Gender</label>
-                                <select id="gender" required class="text-light-text">
+                                <label for="gender" class="block text-sm font-medium dark:text-gray-300 light:text-gray-700">Gender</label>
+                                <select id="gender" required class="text-light-text dark:bg-gray-700 light:bg-white light:text-gray-900">
                                     <option value="" disabled selected>Select Gender</option>
                                     <option value="Male">Male</option>
                                     <option value="Female">Female</option>
                                     <option value="Non-Binary/Other">Non-Binary/Other</option>
                                 </select>
                             </div>
-                            
-                            <!-- Height Group -->
                             <div id="heightInputs">
-                                <!-- Metric Height (Default) -->
                                 <div id="heightMetric" class="unit-group metric">
-                                    <label for="heightCm" class="block text-sm font-medium text-gray-300">Height (cm)</label>
-                                    <input type="number" id="heightCm" min="100" max="250" placeholder="175" required>
+                                    <label for="heightCm" class="block text-sm font-medium dark:text-gray-300 light:text-gray-700">Height (cm)</label>
+                                    <input type="number" id="heightCm" min="100" max="250" placeholder="175" required />
                                 </div>
-                                <!-- Imperial Height (Hidden initially) -->
                                 <div id="heightImperial" class="unit-group imperial hidden grid grid-cols-2 gap-2">
-                                     <div class="col-span-1">
-                                        <label for="heightFt" class="block text-sm font-medium text-gray-300">Height (ft)</label>
-                                        <input type="number" id="heightFt" min="3" max="8" placeholder="5" required disabled>
-                                     </div>
-                                     <div class="col-span-1">
-                                         <label for="heightIn" class="block text-sm font-medium text-gray-300">Height (in)</label>
-                                         <input type="number" id="heightIn" min="0" max="11" placeholder="9" required disabled>
-                                     </div>
+                                    <div class="col-span-1">
+                                        <label for="heightFt" class="block text-sm font-medium dark:text-gray-300 light:text-gray-700">Height (ft)</label>
+                                        <input type="number" id="heightFt" min="3" max="8" placeholder="5" required disabled />
+                                    </div>
+                                    <div class="col-span-1">
+                                        <label for="heightIn" class="block text-sm font-medium dark:text-gray-300 light:text-gray-700">Height (in)</label>
+                                        <input type="number" id="heightIn" min="0" max="11" placeholder="9" required disabled />
+                                    </div>
                                 </div>
                             </div>
-
-                            <!-- Weight Group -->
                             <div id="weightInputs">
-                                <!-- Metric Weight (Default) -->
                                 <div id="weightMetric" class="unit-group metric">
-                                    <label for="weightKg" class="block text-sm font-medium text-gray-300">Weight (kg)</label>
-                                    <input type="number" id="weightKg" step="0.1" min="30" max="300" placeholder="85.5" required>
+                                    <label for="weightKg" class="block text-sm font-medium dark:text-gray-300 light:text-gray-700">Weight (kg)</label>
+                                    <input type="number" id="weightKg" step="0.1" min="30" max="300" placeholder="85.5" required />
                                 </div>
-                                <!-- Imperial Weight (Hidden initially) -->
                                 <div id="weightImperial" class="unit-group imperial hidden">
-                                    <label for="weightLbs" class="block text-sm font-medium text-gray-300">Weight (lbs)</label>
-                                    <input type="number" id="weightLbs" step="0.1" min="66" max="660" placeholder="188.5" required disabled>
+                                    <label for="weightLbs" class="block text-sm font-medium dark:text-gray-300 light:text-gray-700">Weight (lbs)</label>
+                                    <input type="number" id="weightLbs" step="0.1" min="66" max="660" placeholder="188.5" required disabled />
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Goal and Activity -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
-                                <label for="goal" class="block text-sm font-medium text-gray-300">Primary Goal</label>
-                                <select id="goal" required class="text-light-text">
+                                <label for="goal" class="block text-sm font-medium dark:text-gray-300 light:text-gray-700">Primary Goal</label>
+                                <select id="goal" required class="text-light-text dark:bg-gray-700 light:bg-white light:text-gray-900">
                                     <option value="" disabled selected>Select Goal</option>
                                     <option value="Fat Loss (Moderate Deficit)">Fat Loss (Moderate Deficit)</option>
                                     <option value="Muscle Building (Moderate Surplus)">Muscle Building (Moderate Surplus)</option>
@@ -325,47 +439,38 @@
                                 </select>
                             </div>
                             <div>
-                                <label for="activity" class="block text-sm font-medium text-gray-300">Activity Level</label>
-                                <select id="activity" required class="text-light-text">
+                                <label for="activity" class="block text-sm font-medium dark:text-gray-300 light:text-gray-700">Activity Level</label>
+                                <select id="activity" required class="text-light-text dark:bg-gray-700 light:bg-white light:text-gray-900">
                                     <option value="" disabled selected>Select Activity Level</option>
                                     <option value="Sedentary">Sedentary (desk job, little exercise)</option>
                                     <option value="Lightly Active">Lightly Active (1-3 workouts/week)</option>
                                     <option value="Moderately Active">Moderately Active (3-5 workouts/week)</option>
                                     <option value="Very Active">Very Active (6-7 intense workouts/week)</option>
-                            </select>
+                                </select>
                             </div>
                         </div>
-                        
-                        <!-- Calorie Override -->
                         <div class="mb-6">
-                            <label for="calorieOverride" class="block text-sm font-medium text-gray-300">Calorie Adjustment Override (Optional: +/- 500 default)</label>
-                            <input type="number" id="calorieOverride" placeholder="e.g., 300 (for 300 deficit/surplus, or 0 for maintenance)">
-                            <p class="text-xs text-gray-500 mt-1">Leave blank to use the default 500 adjustment (or 0 for Maintenance).</p>
+                            <label for="calorieOverride" class="block text-sm font-medium dark:text-gray-300 light:text-gray-700">Calorie Adjustment Override (Optional: +/- 500 default)</label>
+                            <input type="number" id="calorieOverride" placeholder="e.g., 300 (for 300 deficit/surplus, or 0 for maintenance)" />
+                            <p class="text-xs text-gray-500 mt-1 dark:text-gray-400 light:text-gray-600">Leave blank to use the default 500 adjustment (or 0 for Maintenance).</p>
                         </div>
-
-                        <!-- Real-time Metric Feedback (NEW) -->
-                        <div id="metricFeedback" class="bg-gray-700 border-l-4 border-primary text-light-text p-3 mb-6 rounded-md hidden">
+                        <div id="metricFeedback" class="bg-gray-700 border-l-4 border-primary text-light-text p-3 mb-6 rounded-md hidden dark:bg-gray-700 light:bg-gray-200 light:text-gray-900">
                             <p class="font-semibold text-sm mb-1">Calculated Metrics:</p>
                             <p class="text-xs ml-2"><span class="font-bold">BMR (Resting):</span> <span id="displayBMR">--</span> kcal</p>
                             <p class="text-xs ml-2"><span class="font-bold">TDEE (Maintenance):</span> <span id="displayTDEE">--</span> kcal</p>
                             <p class="text-sm mt-2"><span class="font-extrabold text-primary">Daily Calorie Target:</span> <span id="displayTargetCals" class="font-extrabold text-lg">--</span> kcal</p>
                             <p class="text-sm mt-1"><span class="font-bold text-highlight-green">Estimated MACROS:</span> <span id="displayMacros" class="font-medium text-sm">--</span></p>
                         </div>
-
-                        <!-- Preferences -->
                         <div class="mb-4">
-                            <label for="dietaryRestrictions" class="block text-sm font-medium text-gray-300">Dietary Restrictions & Preferences (e.g., Vegan, no gluten, **3 meals only**)</label>
+                            <label for="dietaryRestrictions" class="block text-sm font-medium dark:text-gray-300 light:text-gray-700">Dietary Restrictions & Preferences (e.g., Vegan, no gluten, 3 meals only)</label>
                             <textarea id="dietaryRestrictions" rows="2" placeholder="Vegetarian, sensitive to dairy, prefers high-protein breakfast. Include the exact meal structure needed (e.g., 3 meals only, or 5 small meals)."></textarea>
                         </div>
-
                         <div class="mb-4">
-                            <label for="workoutPreference" class="block text-sm font-medium text-gray-300">Workout Environment & Style (e.g., Home gym, 45 min max, prefers HIIT)</label>
+                            <label for="workoutPreference" class="block text-sm font-medium dark:text-gray-300 light:text-gray-700">Workout Environment & Style (e.g., Home gym, 45 min max, prefers HIIT)</label>
                             <textarea id="workoutPreference" rows="2" placeholder="Gym access, 60 minutes per session, focus on 4-day split (Upper/Lower/Push/Pull)."></textarea>
                         </div>
-                        
-                        <!-- General Info Input Field -->
                         <div class="mb-6">
-                            <label for="generalInfo" class="block text-sm font-medium text-gray-300">Any other information (Injuries, Limitations, etc.)</label>
+                            <label for="generalInfo" class="block text-sm font-medium dark:text-gray-300 light:text-gray-700">Any other information (Injuries, Limitations, etc.)</label>
                             <textarea id="generalInfo" rows="2" placeholder="e.g., Injured shoulder, only have dumbbells at home, wants to focus on mobility."></textarea>
                         </div>
 
@@ -379,26 +484,19 @@
                     </form>
                 </div>
                 
-                <!-- ADAPT PLAN FORM SECTION (New) -->
                 <div id="adaptPlanForm" class="hidden">
                     <form id="clientFormAdapt" onsubmit="event.preventDefault(); generatePlan();">
-                        
-                        <p class="text-gray-400 mb-4">To adapt a plan, you must still fill out the client biometrics/goals in the New Plan tab to ensure the AI has the **current context and caloric targets** for the adaptation.</p>
-
-                        <!-- Previous Plan Paste Area -->
+                        <p class="text-gray-400 mb-4 dark:text-gray-400 light:text-gray-600">To adapt a plan, you must still fill out the client biometrics/goals in the New Plan tab to ensure the AI has the <strong>current context and caloric targets</strong> for the adaptation.</p>
                         <div class="mb-6">
-                            <label for="previousPlan" class="block text-sm font-medium text-gray-300">1. Paste Previous Plan Text</label>
+                            <label for="previousPlan" class="block text-sm font-medium dark:text-gray-300 light:text-gray-700">1. Paste Previous Plan Text</label>
                             <textarea id="previousPlan" rows="10" placeholder="Paste the entire text block of the old plan here (e.g., Client Profile Summary, WEEK 1, DAY 1, etc.)." required></textarea>
-                            <p class="text-xs text-gray-500 mt-1">Make sure you copy the entire plan from the output window on the right.</p>
+                            <p class="text-xs text-gray-500 mt-1 dark:text-gray-400 light:text-gray-600">Make sure you copy the entire plan from the output window on the right.</p>
                         </div>
-
-                        <!-- Adaptation Suggestions Area -->
                         <div class="mb-6">
-                            <label for="adaptationSuggestions" class="block text-sm font-medium text-gray-300">2. Client Suggestions/Changes</label>
+                            <label for="adaptationSuggestions" class="block text-sm font-medium dark:text-gray-300 light:text-gray-700">2. Client Suggestions/Changes</label>
                             <textarea id="adaptationSuggestions" rows="4" placeholder="e.g., Client struggled with intensity in Week 2, reduce all cardio by 10 minutes. Swap chicken meals for fish in all weeks. We need to maintain the calorie target." required></textarea>
-                            <p class="text-xs text-gray-500 mt-1">Be specific about the changes (e.g., 'Change Day 3 to a rest day', 'Add 50g of carbs to dinner on workout days').</p>
+                            <p class="text-xs text-gray-500 mt-1 dark:text-gray-400 light:text-gray-600">Be specific about the changes (e.g., 'Change Day 3 to a rest day', 'Add 50g of carbs to dinner on workout days').</p>
                         </div>
-
                         <button type="submit" id="adaptButton" 
                                 class="w-full bg-secondary hover:bg-teal-500 text-white font-bold py-3 px-4 rounded-lg transition duration-200 shadow-lg flex items-center justify-center">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 12m15.356 0h.001m-1.41-5.118A8.001 8.001 0 0019.418 12m-1.41 5.118A8.001 8.001 0 004.582 17h.001m.001-5.002H18M12 21l-3.33-3.33M12 21l3.33-3.33M12 21v-3.33"></path></svg>
@@ -406,32 +504,29 @@
                         </button>
                     </form>
                 </div>
-
             </div>
 
-            <!-- Output Plan Card -->
             <div class="plan-card" id="outputCard">
-                <h2 class="text-2xl font-semibold text-light-text mb-4 border-b border-gray-700 pb-2 flex justify-between items-center">
+                <h2 class="text-2xl font-semibold mb-4 border-b pb-2 border-gray-700 dark:text-light-text light:text-light-text flex justify-between items-center">
                     Generated Client Plan
                     <div id="actionButtons" class="flex space-x-2">
-                        <button id="copyButton" class="text-primary hover:text-indigo-400 text-sm font-medium hidden" onclick="copyPlan()">
+                        <button id="copyButton" class="text-primary hover:text-indigo-400 text-sm font-medium hidden" onclick="copyPlan()" type="button" aria-label="Copy Plan">
                             <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5h2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                             Copy
                         </button>
-                        <button id="printButton" class="text-secondary hover:text-teal-500 text-sm font-medium hidden" onclick="printPlan()">
+                        <button id="printButton" class="text-secondary hover:text-teal-500 text-sm font-medium hidden" onclick="printPlan()" type="button" aria-label="Print Plan">
                              <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-5a2 2 0 00-2-2H5a2 2 0 00-2 2v5a2 2 0 002 2h2m2-1c0 .552-.448 1-1 1s-1-.448-1-1 .448-1 1-1 1 .448 1 1zm4 1c0 .552-.448 1-1 1s-1-.448-1-1 .448-1 1-1 1 .448 1 1zm5-7h-4V3H9v7H5l7 7 7-7z"></path></svg>
                             Print
                         </button>
-                        <button id="clearButton" class="text-red-400 hover:text-red-500 text-sm font-medium hidden" onclick="clearPlan()">
+                        <button id="clearButton" class="text-red-400 hover:text-red-500 text-sm font-medium hidden" onclick="clearPlan()" type="button" aria-label="Clear Plan">
                              <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                             Clear
                         </button>
                     </div>
                 </h2>
-                <!-- Plan content wrapper (used for dedicated printing) -->
                 <div id="planToPrint">
-                    <div id="planOutput" class="text-gray-300">
-                        <p class="text-gray-500 italic">Enter the client details and click "Generate" to create a personalized 30-day program. Use the "Adapt Existing Plan" tab to modify a previous plan.</p>
+                    <div id="planOutput" class="text-gray-300 dark:text-gray-300 light:text-gray-800">
+                        <p class="text-gray-500 italic dark:text-gray-400 light:text-gray-600">Enter the client details and click "Generate" to create a personalized 30-day program. Use the "Adapt Existing Plan" tab to modify a previous plan.</p>
                     </div>
                 </div>
             </div>
@@ -440,16 +535,15 @@
     </div>
 
     <script type="module">
-        // Global variables provided by the Canvas environment
+        // Same JavaScript as before with updated planType selector to reflect dropdown
+
         const apiKey = "AIzaSyBGQ6F6jG0Xk79EhBj5UVjJU_MiZ86WioQ"; 
         const modelName = "gemini-2.5-flash-preview-09-2025";
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
-        // Global state for tracking the current mode and units
         let currentMode = 'new';
-        let currentUnits = 'metric'; // State for unit system
-        
-        // DOM elements
+        let currentUnits = 'metric';
+
         const generateButton = document.getElementById('generateButton');
         const planOutput = document.getElementById('planOutput');
         const errorMessage = document.getElementById('errorMessage');
@@ -457,56 +551,78 @@
         const printButton = document.getElementById('printButton');
         const clearButton = document.getElementById('clearButton');
         const metricFeedback = document.getElementById('metricFeedback');
-        
-        // New DOM elements for tab structure
+
         const newPlanTab = document.getElementById('newPlanTab');
         const adaptPlanTab = document.getElementById('adaptPlanTab');
         const newPlanForm = document.getElementById('newPlanForm');
         const adaptPlanForm = document.getElementById('adaptPlanForm');
         const formTitle = document.getElementById('formTitle');
         const adaptButton = document.getElementById('adaptButton');
-        
-        // Input IDs unique to adapt mode
+
         const previousPlan = document.getElementById('previousPlan');
         const adaptationSuggestions = document.getElementById('adaptationSuggestions');
-        
-        // Exponential Backoff parameters
-        const MAX_RETRIES = 5;
-        const BASE_DELAY_MS = 1000;
-        const DEFAULT_ADJUSTMENT = 500;
-        
-        // Conversion Constants
+
+        const modeToggleBtn = document.getElementById('modeToggleBtn');
+        const modeToggleIcon = document.getElementById('modeToggleIcon');
+
         const LBS_TO_KG = 0.453592;
         const IN_TO_CM = 2.54;
-        
-        // Mapping of Activity Level to TDEE Multiplier
+
         const ACTIVITY_MULTIPLIERS = {
             'Sedentary': 1.2,
             'Lightly Active': 1.375,
             'Moderately Active': 1.55,
             'Very Active': 1.725
         };
-        
-        // --- Unit Management and Conversion Functions ---
-        
-        /**
-         * Switches the unit system UI (Metric vs Imperial).
-         * @param {string} unit 'metric' or 'imperial'
-         */
+
+        const DEFAULT_ADJUSTMENT = 500;
+
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                document.body.classList.remove('dark');
+                document.body.classList.add('light');
+                modeToggleIcon.innerHTML = `<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/>`;
+            } else {
+                document.body.classList.remove('light');
+                document.body.classList.add('dark');
+                modeToggleIcon.innerHTML = `
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                `;
+            }
+            localStorage.setItem('preferredTheme', theme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.body.classList.contains('dark') ? 'dark' : 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            applyTheme(newTheme);
+        }
+
+        modeToggleBtn.addEventListener('click', toggleTheme);
+
+        window.onload = () => {
+            const savedTheme = localStorage.getItem('preferredTheme') || 'dark';
+            applyTheme(savedTheme);
+            switchTab('new');
+            switchUnits('metric');
+        };
+
         function switchUnits(unit) {
             currentUnits = unit;
-            
-            // Get all groups and inputs
             const metricGroups = document.querySelectorAll('.unit-group.metric');
             const imperialGroups = document.querySelectorAll('.unit-group.imperial');
-            
-            // Helper to update visibility and required/disabled state
             const updateElements = (elements, show) => {
                 elements.forEach(group => {
                     group.classList.toggle('hidden', !show);
-                    // Update required/disabled state for proper form validation
                     group.querySelectorAll('input, select').forEach(input => {
-                        // Only update required/disabled for the elements that manage the core unit input
                         if (input.id.includes('height') || input.id.includes('weight')) {
                             input.required = show;
                             input.disabled = !show;
@@ -514,22 +630,16 @@
                     });
                 });
             };
-
             if (unit === 'metric') {
                 updateElements(metricGroups, true);
                 updateElements(imperialGroups, false);
-            } else { // imperial
+            } else {
                 updateElements(metricGroups, false);
                 updateElements(imperialGroups, true);
             }
-            
             updateMetricsDisplay();
         }
-        
-        /**
-         * Retrieves client weight and converts to KG if necessary.
-         * @returns {number} Weight in kilograms.
-         */
+
         function getWeightKg() {
             if (currentUnits === 'metric') {
                 const kg = parseFloat(document.getElementById('weightKg').value);
@@ -540,10 +650,6 @@
             }
         }
 
-        /**
-         * Retrieves client height and converts to CM if necessary.
-         * @returns {number} Height in centimeters.
-         */
         function getHeightCm() {
             if (currentUnits === 'metric') {
                 const cm = parseFloat(document.getElementById('heightCm').value);
@@ -551,80 +657,54 @@
             } else {
                 const ft = parseFloat(document.getElementById('heightFt').value);
                 const inches = parseFloat(document.getElementById('heightIn').value);
-                
                 const totalInches = (isNaN(ft) ? 0 : ft * 12) + (isNaN(inches) ? 0 : inches);
                 return totalInches * IN_TO_CM;
             }
         }
-        
-        // --- Core Metric Calculation Functions (Uses KG and CM) ---
 
-        /**
-         * Calculates Basal Metabolic Rate (BMR) using the Mifflin-St Jeor Equation.
-         */
         function calculateBMR(gender, weightKg, heightCm, ageYears) {
             if (!weightKg || !heightCm || !ageYears) return 0;
-
             let bmr;
             const term1 = 10 * weightKg;
             const term2 = 6.25 * heightCm;
             const term3 = 5 * ageYears;
-
             if (gender === 'Male') {
                 bmr = term1 + term2 - term3 + 5;
             } else if (gender === 'Female') {
                 bmr = term1 + term2 - term3 - 161;
             } else {
-                // Use the Male equation as a default for Non-Binary/Other
                 bmr = term1 + term2 - term3 + 5;
             }
             return Math.round(bmr);
         }
 
-        /**
-         * Calculates Total Daily Energy Expenditure (TDEE).
-         */
         function calculateTDEE(bmr, activityLevel) {
             const multiplier = ACTIVITY_MULTIPLIERS[activityLevel] || 1.2;
             return Math.round(bmr * multiplier);
         }
 
-        /**
-         * Calculates the final daily caloric target based on TDEE, goal, and an optional override.
-         */
         function calculateTargetCalories(tdee, goal, overrideStr) {
             let adjustment = DEFAULT_ADJUSTMENT;
             const override = parseInt(overrideStr, 10);
-            
             if (!isNaN(override)) {
                 adjustment = override;
             } else if (goal.includes('Maintenance')) {
                 return tdee;
             }
-            
             let targetCals = tdee;
-
             if (goal.includes('Fat Loss')) {
                 targetCals = tdee - adjustment;
             } else if (goal.includes('Muscle Building')) {
                 targetCals = tdee + adjustment;
             }
-            
-            // Round to the nearest 50 for simplicity in macro planning
             return Math.round(targetCals / 50) * 50;
         }
 
-        /**
-         * Calculates a macro split based on the goal.
-         */
         function calculateMacros(targetCals, goal) {
             let proteinPercent, carbPercent, fatPercent;
-            
-            // Default split (Maintenance/Endurance)
             proteinPercent = 30; 
             carbPercent = 40;
             fatPercent = 30;
-
             if (goal.includes('Fat Loss')) {
                 proteinPercent = 35;
                 carbPercent = 35;
@@ -634,123 +714,72 @@
                 carbPercent = 45;
                 fatPercent = 25;
             }
-            
-            // Calculate grams
             const proteinGrams = Math.round((targetCals * (proteinPercent / 100)) / 4);
             const carbGrams = Math.round((targetCals * (carbPercent / 100)) / 4);
             const fatGrams = Math.round((targetCals * (fatPercent / 100)) / 9);
-            
             return `${proteinGrams}g Protein (${proteinPercent}%) / ${carbGrams}g Carbs (${carbPercent}%) / ${fatGrams}g Fat (${fatPercent}%)`;
         }
 
-        /**
-         * Updates the real-time metric display in the form.
-         */
         function updateMetricsDisplay() {
             const age = parseFloat(document.getElementById('age').value);
             const gender = document.getElementById('gender').value;
             const goal = document.getElementById('goal').value;
             const activity = document.getElementById('activity').value;
             const calorieOverride = document.getElementById('calorieOverride').value.trim();
-            
-            // Get the calculated metric values (always in KG/CM internally)
             const weightKg = getWeightKg();
             const heightCm = getHeightCm();
-
             const requiredFieldsReady = age && gender && goal && activity && (weightKg > 0) && (heightCm > 0);
-
             if (!requiredFieldsReady) {
                 metricFeedback.classList.add('hidden');
                 return;
             }
-
             const bmr = calculateBMR(gender, weightKg, heightCm, age);
             const tdee = calculateTDEE(bmr, activity);
             const targetCals = calculateTargetCalories(tdee, goal, calorieOverride);
             const macroSplit = calculateMacros(targetCals, goal);
-
             document.getElementById('displayBMR').textContent = bmr.toLocaleString();
             document.getElementById('displayTDEE').textContent = tdee.toLocaleString();
             document.getElementById('displayTargetCals').textContent = targetCals.toLocaleString();
             document.getElementById('displayMacros').textContent = macroSplit;
-            
             metricFeedback.classList.remove('hidden');
         }
 
-        // Attach event listeners to trigger real-time updates
         const inputs = document.querySelectorAll('#clientFormNew input[type="number"], #clientFormNew select, #dietaryRestrictions, #workoutPreference');
         inputs.forEach(input => {
             input.addEventListener('change', updateMetricsDisplay);
             input.addEventListener('input', updateMetricsDisplay);
         });
 
-        // --- New UI/UX Functions ---
-
-        /**
-         * Clears the output window.
-         */
-        function clearPlan() {
-            planOutput.innerHTML = `<p class="text-gray-500 italic">Enter the client details and click "Generate" to create a personalized 30-day program. Use the "Adapt Existing Plan" tab to modify a previous plan.</p>`;
-            window.rawPlanText = '';
-            copyButton.classList.add('hidden');
-            printButton.classList.add('hidden');
-            clearButton.classList.add('hidden');
-        }
-        
-        /**
-         * Switches the active tab and updates the UI accordingly.
-         * @param {string} mode 'new' or 'adapt'
-         */
         function switchTab(mode) {
             currentMode = mode;
-            
-            // 1. Update Tab Styles
             if (mode === 'new') {
                 newPlanTab.classList.remove('bg-card-bg', 'text-gray-400', 'border-gray-700', 'bg-secondary');
                 newPlanTab.classList.add('bg-primary', 'text-white');
                 adaptPlanTab.classList.remove('bg-primary', 'text-white');
                 adaptPlanTab.classList.add('bg-card-bg', 'text-gray-400', 'border-gray-700');
-                
-                // Update button and form visibility
                 newPlanForm.classList.remove('hidden');
                 adaptPlanForm.classList.add('hidden');
                 formTitle.textContent = 'Client Profile & Goal Settings';
-            } else { // mode === 'adapt'
+            } else {
                 adaptPlanTab.classList.remove('bg-card-bg', 'text-gray-400', 'border-gray-700');
                 adaptPlanTab.classList.add('bg-secondary', 'text-white');
                 newPlanTab.classList.remove('bg-primary', 'text-white');
                 newPlanTab.classList.add('bg-card-bg', 'text-gray-400', 'border-gray-700');
-                
-                // Update button and form visibility
                 newPlanForm.classList.add('hidden');
                 adaptPlanForm.classList.remove('hidden');
                 formTitle.textContent = 'Adaptation Settings & Client Context';
             }
-            
-            // Clear error message when switching tabs
             errorMessage.classList.add('hidden');
             updateMetricsDisplay(); 
         }
 
-        // Initialize the tab view and units
-        window.onload = () => {
-            switchTab('new');
-            switchUnits('metric'); // Set initial unit state
-        };
-
-        // --- Plan Generation Logic ---
-
-        /**
-         * Utility function for exponential backoff retry logic.
-         */
         async function retryWithBackoff(fn, retries = 0) {
             try {
                 return await fn();
             } catch (error) {
-                if (retries < MAX_RETRIES && (error.status === 429 || error.status >= 500 || error.status === undefined)) {
-                    const delay = BASE_DELAY_MS * Math.pow(2, retries) + Math.random() * 1000;
-                    console.warn(`API call failed (Attempt ${retries + 1}/${MAX_RETRIES}). Retrying in ${Math.round(delay / 1000)}s...`);
-                    
+                if (retries < 5 && (error.status === 429 || error.status >= 500 || error.status === undefined)) {
+                    const delay = 1000 * Math.pow(2, retries) + Math.random() * 1000;
+                    console.warn(`API call failed (Attempt ${retries + 1}/5). Retrying in ${Math.round(delay / 1000)}s...`);
                     await new Promise(resolve => setTimeout(resolve, delay));
                     return retryWithBackoff(fn, retries + 1);
                 } else {
@@ -760,53 +789,19 @@
             }
         }
 
-        /**
-         * Formats the raw plan text with HTML spans for syntax highlighting.
-         */
         function formatPlanText(text) {
             let formattedText = text;
-
-            // Use non-breaking spaces for display consistency
             formattedText = formattedText.replace(/ /g, ' ');
-            // Replace newlines with <br> for HTML rendering, maintaining pre-wrap for structure
             formattedText = formattedText.replace(/\n/g, '<br>');
-
-            // 1. Highlight Client Summary Header
-            formattedText = formattedText.replace(
-                /(CLIENT\s+PROFILE\s+SUMMARY)/gi, 
-                '<span class="plan-heading-summary">$1</span>'
-            );
-            
-            // 2. Highlight Key Metrics (TDEE, MACROS) - Green Accent
-            formattedText = formattedText.replace(
-                /(TDEE\s*Calculation|Daily\s*Caloric\s*Target|MACROS\s*Split|Hydration\s*Goal):/gi, 
-                '<span class="plan-metric-key">$1:</span>'
-            );
-            
-            // 3. Highlight Week Headings - Teal Accent (Largest)
-            formattedText = formattedText.replace(
-                /(WEEK\s+\d+)/gi, 
-                '<span class="plan-heading-week">$1</span>'
-            );
-            
-            // 4. Highlight Daily Headings - Primary Indigo Accent
-            formattedText = formattedText.replace(
-                /(DAY\s+\d+)/gi, 
-                '<span class="plan-heading-day">$1</span>'
-            );
-            
-            // 5. Highlight Section Headings (WORKOUT/NUTRITION + details) - ALL CAPS
-            formattedText = formattedText.replace(
-                /(WORKOUT\s*\(.*?\):|NUTRITION\s*\(.*?\):)/gi, 
-                '<span class="plan-heading-section">$1</span>'
-            );
-            
+            formattedText = formattedText.replace(/(CLIENT\s+PROFILE\s+SUMMARY)/gi, '<span class="plan-heading-summary">$1</span>');
+            formattedText = formattedText.replace(/(TDEE\s*Calculation|Daily\s*Caloric\s*Target|MACROS\s*Split|Hydration\s*Goal):/gi, '<span class="plan-metric-key">$1:</span>');
+            formattedText = formattedText.replace(/(WEEK\s+\d+)/gi, '<span class="plan-heading-week">$1</span>');
+            formattedText = formattedText.replace(/(DAY\s+\d+)/gi, '<span class="plan-heading-day">$1</span>');
+            formattedText = formattedText.replace(/(WORKOUT\s*\(.*?\):|NUTRITION\s*\(.*?\):)/gi, '<span class="plan-heading-section">$1</span>');
             return formattedText;
         }
 
-
         async function generatePlan() {
-            // Retrieve core client data
             const clientName = document.getElementById('clientName').value.trim();
             const age = parseFloat(document.getElementById('age').value);
             const gender = document.getElementById('gender').value;
@@ -815,66 +810,75 @@
             const dietaryRestrictions = document.getElementById('dietaryRestrictions').value.trim() || 'None specified.';
             const workoutPreference = document.getElementById('workoutPreference').value.trim() || 'General strength training and cardio mix.';
             const calorieOverride = document.getElementById('calorieOverride').value.trim();
-            const generalInfo = document.getElementById('generalInfo').value.trim() || 'None specified.'; 
-            
-            // Get the calculated metric values (always in KG/CM internally)
+            const generalInfo = document.getElementById('generalInfo').value.trim() || 'None specified.';
             const weightKg = getWeightKg();
             const heightCm = getHeightCm();
-            
-            // ** Step 1: Client-side validation and metric calculation **
-            if (!clientName || !age || !gender || !goal || !activity || weightKg <= 0 || heightCm <= 0) {
-                errorMessage.textContent = 'Please fill out all required fields with valid values.';
-                errorMessage.classList.remove('hidden');
-                return;
+
+            if (currentMode === 'new') {
+                if (!clientName || !age || !gender || !goal || !activity || weightKg <= 0 || heightCm <= 0) {
+                    errorMessage.textContent = 'Please fill out all required fields with valid values.';
+                    errorMessage.classList.remove('hidden');
+                    return;
+                }
             }
 
             const bmr = calculateBMR(gender, weightKg, heightCm, age);
             const tdee = calculateTDEE(bmr, activity);
             const targetCals = calculateTargetCalories(tdee, goal, calorieOverride);
             const macroSplit = calculateMacros(targetCals, goal);
-            
-            // Determine display values for the prompt (to avoid confusing the LLM with imperial units)
             const displayWeight = currentUnits === 'metric' ? `${weightKg.toFixed(1)} kg` : `${(weightKg / LBS_TO_KG).toFixed(1)} lbs`;
             const displayHeight = currentUnits === 'metric' ? `${heightCm.toFixed(1)} cm` : `${Math.floor(heightCm / IN_TO_CM / 12)} ft ${Math.round((heightCm / IN_TO_CM) % 12)} in`;
 
             let userQuery = '';
             let systemInstruction = '';
-            
-            // ** Mode Switching Logic & Prompt Construction **
+
+            let planType = 'both';
             if (currentMode === 'new') {
-                // --- NEW PLAN GENERATION MODE ---
-                
+                const selectedPlanTypeInput = document.getElementById('planTypeSelect');
+                if (selectedPlanTypeInput) {
+                    planType = selectedPlanTypeInput.value;
+                }
+            }
+
+            if (currentMode === 'new') {
                 systemInstruction = `You are a certified professional fitness and nutrition coach named 'AI Coach'. Your task is to generate a highly detailed, 30-day daily workout and meal plan for a client. The plan must be delivered in a single, clean text block.
 
 **Plan Requirements:**
 1.  **Client Profile Summary:** The very first part of your output MUST be a block titled 'CLIENT PROFILE SUMMARY' that includes all client biometrics AND the pre-calculated metrics provided below.
 2.  **Output Structure & Alignment (CRITICAL):** The entire output MUST be clean, structured, and flush against the left margin. **DO NOT use any tabs or leading spaces/indents.**
-3.  **Output Structure (MANDATORY TEMPLATE):** The plan MUST be structured by week (WEEK 1, WEEK 2, etc.) and then daily using the following EXACT template for each day. Ensure a double line break after the DAY # header. **STRICTLY FOLLOW THE MEAL COUNT SPECIFIED IN THE CLIENT'S DIETARY RESTRICTIONS (e.g., if '3 meals only' is mentioned, omit the snack lines).** Use the structure below and omit lines that are not needed:
+3.  **Output Structure (MANDATORY TEMPLATE):** The plan MUST be structured by week (WEEK 1, WEEK 2, etc.) and then daily using the following EXACT template for each day. Ensure a double line break after the DAY # header. STRICTLY FOLLOW THE MEAL COUNT SPECIFIED IN THE CLIENT'S DIETARY RESTRICTIONS (e.g., if '3 meals only' is mentioned, omit the snack lines). Use the structure below and omit lines that are not needed:
 
     \`\`\`
     DAY [NUMBER]
-    
+
     WORKOUT ([Type and Duration]):
     Warmup ([Time]): [Details]
     Workout ([Structure/Rounds]): [Details]
     [Additional Workout sections if needed]
     Cooldown ([Time]): [Details]
-    
+
     NUTRITION ([Focus or Target]):
     Breakfast: [Specific Meal Idea & Simple Recipe]
     Snack 1: [Specific Snack - OMIT if not needed per client]
     Lunch: [Specific Meal Idea & Simple Recipe]
     Snack 2: [Specific Snack - OMIT if not needed per client]
     Dinner: [Specific Meal Idea & Simple Recipe]
-    
+
     Hydration Goal: [Amount]
     \`\`\`
 
-4.  **Content Adherence:** Workouts must consider 'General Info' (e.g., injuries). Meal plans MUST specify Breakfast, Lunch, and Dinner with **SPECIFIC MEAL IDEAS AND SIMPLE RECIPE DESCRIPTIONS**, and **CRITICALLY ADHERE TO THE CLIENT'S SPECIFIC MEAL COUNT REQUESTS.**
-5.  **Style:** The output must be professional, using only text and standard line breaks for structure. **DO NOT use any Markdown formatting characters such as #, *, -, or [].**
+4.  **Content Adherence:** Workouts must consider 'General Info' (e.g., injuries). Meal plans MUST specify Breakfast, Lunch, and Dinner with SPECIFIC MEAL IDEAS AND SIMPLE RECIPE DESCRIPTIONS, and CRITICALLY ADHERE TO THE CLIENT'S SPECIFIC MEAL COUNT REQUESTS.
+5.  **Style:** The output must be professional, using only text and standard line breaks for structure. DO NOT use any Markdown formatting characters such as #, *, -, or [].
 
-**DELIVER ONLY THE PLAN TEXT. DO NOT INCLUDE ANY CONVERSATIONAL TEXT OR PREAMBLE.**`;
-                
+**IMPORTANT:**
+
+Generate only the parts requested by the client based on the selected plan type:
+- If the client chooses 'workout' only, generate ONLY the WORKOUT sections with no NUTRITION.
+- If the client chooses 'nutrition' only, generate ONLY the NUTRITION sections with no WORKOUT.
+- If the client chooses 'both', generate both WORKOUT and NUTRITION sections as per the template.
+
+DELIVER ONLY THE PLAN TEXT. DO NOT INCLUDE ANY CONVERSATIONAL TEXT OR PREAMBLE.`;
+
                 userQuery = `Client Profile (Including Pre-Calculated Metrics):
 - Name: ${clientName}
 - Age: ${age} years
@@ -889,51 +893,48 @@
 - Dietary Restrictions/Preferences: ${dietaryRestrictions}
 - Workout Environment/Style Preference: ${workoutPreference}
 - General Information: ${generalInfo}
+- Requested Plan Type: ${planType.toUpperCase()}
 
-Generate the complete 30-day daily workout and meal plan based on the instructions and the pre-calculated targets above. ENSURE ALL CONTENT IS FLUSH LEFT and follows the specific daily template provided in the system instructions.`;
-            
+Generate the complete 30-day daily plan based on the instructions and the pre-calculated targets above. ENSURE ALL CONTENT IS FLUSH LEFT and follows the specific daily template provided in the system instructions.`;
             } else {
-                // --- ADAPT EXISTING PLAN MODE ---
-
                 const planText = previousPlan.value.trim();
                 const suggestionsText = adaptationSuggestions.value.trim();
-
                 if (!planText || !suggestionsText) {
                     errorMessage.textContent = 'Please paste the previous plan and enter specific suggestions for adaptation.';
                     errorMessage.classList.remove('hidden');
                     return;
                 }
-                
                 systemInstruction = `You are a certified professional fitness and nutrition coach named 'AI Coach'. Your task is to revise a previously generated 30-day client plan.
 
 **Revision Requirements:**
 1.  **Strict Adherence:** You MUST adhere to the 'Client Suggestions/Changes' provided below.
-2.  **Maintain Structure:** The output MUST retain the existing 30-day structure (WEEK 1, WEEK 2, etc.) and all **Formatting Rules** from the original plan.
+2.  **Maintain Structure:** The output MUST retain the existing 30-day structure (WEEK 1, WEEK 2, etc.) and all Formatting Rules from the original plan.
 3.  **Client Profile:** The 'CLIENT PROFILE SUMMARY' section MUST be updated to reflect the latest client details and metrics (provided below), even if they are the same as the previous plan.
-4.  **Output Structure & Alignment (CRITICAL):** The entire output MUST be clean, structured, and flush against the left margin. **DO NOT use any tabs or leading spaces/indents.**
+4.  **Output Structure & Alignment (CRITICAL):** The entire output MUST be clean, structured, and flush against the left margin. DO NOT use any tabs or leading spaces/indents.
 5.  **Formatting Rules:** The plan MUST use the standard template:
     \`\`\`
     DAY [NUMBER]
-    
+
     WORKOUT ([Type and Duration]):
     Warmup ([Time]): [Details]
     Workout ([Structure/Rounds]): [Details]
     [Additional Workout sections if needed]
     Cooldown ([Time]): [Details]
-    
+
     NUTRITION ([Focus or Target]):
     Breakfast: [Specific Meal Idea & Simple Recipe]
     Snack 1: [Specific Snack - OMIT if not needed]
     Lunch: [Specific Meal Idea & Simple Recipe]
     Snack 2: [Specific Snack - OMIT if not needed]
     Dinner: [Specific Meal Idea & Simple Recipe]
-    
+
     Hydration Goal: [Amount]
     \`\`\`
-6.  **Style:** The output must be professional, using only text and standard line breaks for structure. **DO NOT use any Markdown formatting characters such as #, *, -, or [].**
 
-**DELIVER ONLY THE FULL, REVISED 30-DAY PLAN TEXT. DO NOT INCLUDE ANY CONVERSATIONAL TEXT, PREAMBLE, OR NOTES ABOUT THE CHANGES.**`;
-                
+6.  **Style:** The output must be professional, using only text and standard line breaks for structure. DO NOT use any Markdown formatting characters such as #, *, -, or [].
+
+DELIVER ONLY THE FULL, REVISED 30-DAY PLAN TEXT. DO NOT INCLUDE ANY CONVERSATIONAL TEXT, PREAMBLE, OR NOTES ABOUT THE CHANGES.`;
+
                 userQuery = `Client Profile (for Context and Summary Update):
 - Name: ${clientName}
 - Age: ${age} years
@@ -958,8 +959,6 @@ ${suggestionsText}
 
 Generate the **Revised** 30-day plan based on the original structure, the current client profile, and the suggestions/changes provided. ENSURE THE FINAL OUTPUT IS FLUSH LEFT and follows the specific daily template and formatting rules.`;
             }
-
-            // ** Execution Logic **
             errorMessage.classList.add('hidden');
             copyButton.classList.add('hidden');
             printButton.classList.add('hidden');
@@ -968,7 +967,7 @@ Generate the **Revised** 30-day plan based on the original structure, the curren
             const buttonToDisable = currentMode === 'new' ? generateButton : adaptButton;
             buttonToDisable.disabled = true;
             buttonToDisable.classList.add('opacity-50');
-            
+
             planOutput.innerHTML = `<div class="flex justify-center items-center h-48">
                                         <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -989,35 +988,27 @@ Generate the **Revised** 30-day plan based on the original structure, the curren
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
-
                     if (!response.ok) {
                         const errorBody = await response.json();
                         throw { status: response.status, message: errorBody.error?.message || 'Unknown API Error' };
                     }
                     return response.json();
                 };
-
                 const result = await retryWithBackoff(fetchPlan);
                 const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-
                 if (generatedText) {
-                    // 1. Clean the text based on the user's strict request (no *, #, etc.)
                     let cleanedText = generatedText
-                        .replace(/[#*_-]/g, '') // Remove common markdown characters
-                        .replace(/\[|\]/g, '')  // Remove square brackets
-                        .replace(/\s*(\r?\n){3,}\s*/g, '\n\n'); // Limit excessive blank lines
-
-                    // 2. Store the raw text for copying/printing, and format for display
+                        .replace(/[#*_-]/g, '')
+                        .replace(/\[|\]/g, '')
+                        .replace(/\s*(\r?\n){3,}\s*/g, '\n\n');
                     window.rawPlanText = cleanedText;
                     planOutput.innerHTML = formatPlanText(cleanedText);
-                    
                     copyButton.classList.remove('hidden');
                     printButton.classList.remove('hidden');
                     clearButton.classList.remove('hidden');
                 } else {
                     throw new Error("AI failed to generate content. Please adjust the input details and try again.");
                 }
-
             } catch (error) {
                 planOutput.innerHTML = `<p class="text-red-400 font-semibold">Error:</p><p>${error.message}</p>`;
             } finally {
@@ -1025,14 +1016,10 @@ Generate the **Revised** 30-day plan based on the original structure, the curren
                 buttonToDisable.classList.remove('opacity-50');
             }
         }
-        
-        // Function to copy the generated plan to the clipboard
-        function copyPlan() {
-            // Use the raw text stored in the window object, not the formatted innerHTML
-            const textToCopy = window.rawPlanText || planOutput.textContent; 
 
-            if (textToCopy && textToCopy.length > 100) { 
-                // Use execCommand for broader compatibility in sandbox environments
+        function copyPlan() {
+            const textToCopy = window.rawPlanText || planOutput.textContent;
+            if (textToCopy && textToCopy.length > 100) {
                 const textarea = document.createElement('textarea');
                 textarea.value = textToCopy;
                 document.body.appendChild(textarea);
@@ -1049,17 +1036,23 @@ Generate the **Revised** 30-day plan based on the original structure, the curren
                 document.body.removeChild(textarea);
             }
         }
-        
-        // Function to print only the generated plan
+
         function printPlan() {
             window.print();
         }
 
-        // Make the functions globally available for the button clicks and initialization
+        function clearPlan() {
+            planOutput.innerHTML = `<p class="text-gray-500 italic dark:text-gray-400 light:text-gray-600">Enter the client details and click "Generate" to create a personalized 30-day program. Use the "Adapt Existing Plan" tab to modify a previous plan.</p>`;
+            window.rawPlanText = '';
+            copyButton.classList.add('hidden');
+            printButton.classList.add('hidden');
+            clearButton.classList.add('hidden');
+        }
+
         window.copyPlan = copyPlan;
         window.generatePlan = generatePlan;
         window.printPlan = printPlan;
-        window.formatPlanText = formatPlanText; 
+        window.formatPlanText = formatPlanText;
         window.updateMetricsDisplay = updateMetricsDisplay;
         window.switchTab = switchTab;
         window.switchUnits = switchUnits;
@@ -1067,5 +1060,3 @@ Generate the **Revised** 30-day plan based on the original structure, the curren
     </script>
 </body>
 </html>
-
-
